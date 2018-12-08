@@ -12,7 +12,7 @@ node('linux') {
   stage('Deploy'){
     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: '28b3c933-f5a1-4396-afd2-5d892f86afe0', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
     // some block
-      sh 'aws s3 cp s3://seis665-03-asm10/rectangle-2.jar /build.xml'
+      sh 'aws s3 cp build.xml s3://seis665-03-asm10/rectangle-2.jar'
     }
   }
   stage('Report'){
