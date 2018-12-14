@@ -1,17 +1,24 @@
-git credentialsId: '48f7511a-b0a1-4a90-8d7b-036be497936e', url: 'https://github.com/UST-SEIS665/seis665-03-fall-2018-assignment-11-wygsephi.git'
-
 properties([pipelineTriggers([githubPush()])])
 
 node('linux') {
-  stage('Setup'){
-    sh 'aws s3 cp s3://seis665-03-asm10/classweb.html ./index.html'
+  stage('Unit Tests'){
+    git 'https://github.com/wygsephi/java-project.git'
+    sh 'ant -f test.xml -v'
+    junit 'reports/result.xml'
   }
   stage('Build'){
-    sh 'docker build -t classweb:1.0 .'
+    sh 'ant -f build.xml -v'
   }
-  stage('Test'){
-    sh 'docker run -d -p 80:80 --env NGINX_PORT="80" classweb:1.0'
-    sh 'curl -s 10.120.1.196'
+  stage('Deploy'){
+    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: '28b3c933-f5a1-4396-afd2-5d892f86afe0', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+    // some block
+      sh 'aws s3 cp build.xml s3://seis665-03-asm10/rectangle-2.jar'
+    }
+  }
+  stage('Report'){
+    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: '28b3c933-f5a1-4396-afd2-5d892f86afe0', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+    // some block
+      sh 'aws cloudformation describe-stack-resources --region us-east-1 --stack-name jenkins665'
     }
   }
 }
